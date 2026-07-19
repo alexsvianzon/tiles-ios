@@ -10,6 +10,11 @@ import WebKit
 
 struct ContentView: View {
     var body: some View {
+        Text("Tiles!")
+            .font(.largeTitle)
+        
+        GameView()
+        
         VStack {
             Button() {
                 
@@ -27,8 +32,6 @@ struct ContentView: View {
                         .foregroundStyle(.blue)
                         .imageScale(.large)
                 }
-                
-                Spacer()
                 
                 Button() {
                     
