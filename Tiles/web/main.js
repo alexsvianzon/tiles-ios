@@ -6,6 +6,10 @@ let CANVAS_SIZE = Math.min(
 let GRID_SIZE = 12;
 let TILE_SIZE = CANVAS_SIZE / GRID_SIZE;
 
+//test
+
+window.instanceID = Math.random();
+
 class Tile {
     constructor() {
         this.vertical = new Group();
@@ -99,7 +103,9 @@ class Player {
         this.sprite.y = TILE_SIZE * this.y - (TILE_SIZE / 2);
 
         for (const t of grid) {
-            if (t.x === this.sprite.x && t.y === this.sprite.y) {
+            if (Math.floor(t.x) === Math.floor(this.sprite.x) &&
+                Math.floor(t.y) === Math.floor(this.sprite.y)) {
+                
                 this.currentTile = t.tile;
                 return;
             }
@@ -248,6 +254,7 @@ function setup() {
     });
     
     game = new Game();
+    window.bridge = game.bridge;
     game.bridge.receive("load_level", '{"data":{"id":1},"level":["............","............","...j.bj.>^$.","...^>j.b.>^.",">j.>^.......","b.j.>^.j.>b.","..^..j......","bjb>^..jb.j.","..jb.j....^.","j...j.>>b.^.","^...^>^.j.^.","b>j.>^j.b..."]}');
 }
 
@@ -256,4 +263,5 @@ function draw() {
     background('#4361ee');
 
     game.update();
+    console.log(window.instanceID);
 }
