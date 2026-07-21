@@ -30,7 +30,14 @@ extension View {
 
 
 struct GameView: View {
-    @State private var game: GameController = GameController()
+    @State private var gameState: GameState
+    private var game: GameController
+    
+    init() {
+        let initGameState = GameState()
+        gameState = initGameState
+        game = GameController(gameState: initGameState)
+    }
     
     var body: some View {
         Text("Demo Level")

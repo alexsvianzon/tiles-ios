@@ -8,11 +8,21 @@
 import SwiftUI
 import WebKit
 
-@Observable
+struct Level {
+    var Id: UInt = 0
+    var tileData: Array<String> = []
+}
+
+struct GameState {
+    var isFalling: Bool = false
+    var currentLevel: Level = Level()
+}
+
 class GameController {
     var page = WebPage()
+    var gameState: GameState
     
-    init() {
+    init(gameState: GameState) {
         let htmlURL = Bundle.main.url(forResource: "index", withExtension: "html")!
         let baseURL = htmlURL.deletingLastPathComponent()
         
@@ -25,6 +35,33 @@ class GameController {
         
         page.load(html: htmlString!, baseURL: baseURL)
         page.isInspectable = true
+        
+        self.gameState = gameState
+    }
+    
+    /*
+     internal version of emit that runs alongside public calls
+     
+     mainly used for updating
+     */
+    
+    @MainActor
+    private func _emit() async {
+        do {
+            let result = try await page.callJavaScript(
+                """
+                return game.player.currentTile;
+                """
+            )
+            
+            if (result! as! String == "f") {
+                gameState.isFalling = true
+            } else {
+                gameState.isFalling = false
+            }
+        } catch {
+            print("\(error)")
+        }
     }
     
     @MainActor
@@ -48,5 +85,7 @@ class GameController {
         } catch {
             print("\(error)")
         }
+        
+        await _emit()
     }
 }
