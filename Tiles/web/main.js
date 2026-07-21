@@ -64,6 +64,8 @@ class Tile {
             TILE_SIZE,
             TILE_SIZE
         );
+        
+        this.grid.push(this.finish);
 
         this.grid.layer = 1;
 
@@ -175,10 +177,12 @@ class Game {
     update() {
         if (this.playing) {
             this.player.update(this.tiles.grid);
-
-            if (this.player.sprite.overlapping(this.tiles.finish)) {
-                this.bridge.emit("level_finished");
+            
+            if (this.player.currentTile == '$') {
                 this.playing = false;
+                this.bridge.emit("finished")
+            } else if (this.player.currentTile == 'f') {
+                this.bridge.emit("player_fell")
             }
 
             switch (this.event_queue.shift()) {
@@ -250,12 +254,12 @@ function setup() {
     createCanvas(CANVAS_SIZE - 1, CANVAS_SIZE - 1);
         
     requestAnimationFrame(() => {
-        console.log("RAF fired");
+        return;
     });
     
     game = new Game();
     window.bridge = game.bridge;
-    game.bridge.receive("load_level", '{"data":{"id":1},"level":["............","............","...j.bj.>^$.","...^>j.b.>^.",">j.>^.......","b.j.>^.j.>b.","..^..j......","bjb>^..jb.j.","..jb.j....^.","j...j.>>b.^.","^...^>^.j.^.","b>j.>^j.b..."]}');
+    // game.bridge.receive("load_level", '{"data":{"id":1},"level":["............","............","...j.bj.>^$.","...^>j.b.>^.",">j.>^.......","b.j.>^.j.>b.","..^..j......","bjb>^..jb.j.","..jb.j....^.","j...j.>>b.^.","^...^>^.j.^.","b>j.>^j.b..."]}');
 }
 
 function draw() {

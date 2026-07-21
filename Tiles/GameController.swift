@@ -15,7 +15,22 @@ struct Level {
 
 struct GameState {
     var isFalling: Bool = false
+    var isBeaten: Bool = false
+    var moveCount: UInt = 0
     var currentLevel: Level = Level()
+}
+
+enum GameInput {
+    case RESET
+    case UP
+    case DOWN
+    case LEFT
+    case RIGHT
+}
+
+enum GameOutput {
+    case FINISHED
+    case ERROR
 }
 
 class GameController {
@@ -34,58 +49,46 @@ class GameController {
         }
         
         page.load(html: htmlString!, baseURL: baseURL)
-        page.isInspectable = true
         
+        page.isInspectable = true
         self.gameState = gameState
     }
     
-    /*
-     internal version of emit that runs alongside public calls
-     
-     mainly used for updating
-     */
-    
     @MainActor
-    private func _emit() async {
+    public func emit(event: GameInput) async {
         do {
-            let result = try await page.callJavaScript(
-                """
-                return game.player.currentTile;
-                """
-            )
+            var event_string: String
             
-            if (result! as! String == "f") {
-                gameState.isFalling = true
-            } else {
-                gameState.isFalling = false
+            switch event {
+            case .UP:
+                event_string = "up"
+                gameState.moveCount += 1
+                
+            case .DOWN:
+                event_string = "down"
+                gameState.moveCount += 1
+                
+            case .LEFT:
+                event_string = "left"
+                gameState.moveCount += 1
+                
+            case .RIGHT:
+                event_string = "right"
+                gameState.moveCount += 1
+                
+            case .RESET:
+                event_string = "reset"
+                gameState.moveCount = 0
             }
+            
+            try await page.callJavaScript(
+                """
+                game.bridge.receive(event);
+                """,
+                arguments: ["event": event_string]
+            )
         } catch {
             print("\(error)")
         }
-    }
-    
-    @MainActor
-    public func emit(event: String, data: String = "") async {
-        do {
-            if (data == "") {
-                try await page.callJavaScript(
-                    """
-                    game.bridge.receive(event);
-                    """,
-                    arguments: ["event": event]
-                )
-            } else {
-                try await page.callJavaScript(
-                    """
-                    game.bridge.receive(event, data);
-                    """,
-                    arguments: ["event": event, "data": data]
-                )
-            }
-        } catch {
-            print("\(error)")
-        }
-        
-        await _emit()
     }
 }

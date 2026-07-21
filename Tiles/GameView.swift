@@ -49,7 +49,7 @@ struct GameView: View {
         VStack {
             Button() {
                 Task {
-                    await game.emit(event: "up", data: "")
+                    await game.emit(event: .UP)
                 }
             } label: {
                 Image(systemName: "arrowshape.up.fill")
@@ -59,7 +59,7 @@ struct GameView: View {
             HStack {
                 Button() {
                     Task {
-                        await game.emit(event: "left", data: "")
+                        await game.emit(event: .LEFT)
                     }
                 } label: {
                     Image(systemName: "arrowshape.left.fill")
@@ -68,7 +68,7 @@ struct GameView: View {
                 
                 Button() {
                     Task {
-                        await game.emit(event: "reset")
+                        await game.emit(event: .RESET)
                     }
                 } label: {
                     Image(systemName: "arrow.clockwise")
@@ -77,7 +77,7 @@ struct GameView: View {
                 
                 Button() {
                     Task {
-                        await game.emit(event: "right", data: "")
+                        await game.emit(event: .RIGHT)
                     }
                 } label: {
                     Image(systemName: "arrowshape.right.fill")
@@ -87,7 +87,7 @@ struct GameView: View {
             
             Button() {
                 Task {
-                    await game.emit(event: "down", data: "")
+                    await game.emit(event: .DOWN)
                 }
             } label: {
                 Image(systemName: "arrowshape.down.fill")
