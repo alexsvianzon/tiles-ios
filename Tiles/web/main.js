@@ -138,7 +138,7 @@ class Game {
         this.playing = false;
 
         this.event_queue = new Array();
-        this.bridge = new Bridge(new WebTransport());
+        this.bridge = new Bridge(new IOSTransport());
         this.bridge.on("load_level", (level_json) => {
             let level = JSON.parse(level_json.trim());
             this.level.tiles = level.level;
@@ -170,80 +170,88 @@ class Game {
         });
 
         this.bridge.on("reset", () => {
-            this.event_queue.push("reset");
+            if (this.player.currentTile == 'f') {
+                this.event_queue.push("reset");
+                this.playing = true
+            }
         });
     }
 
     update() {
-        if (this.playing) {
-            this.player.update(this.tiles.grid);
+        if (!this.playing) return;
+        
+        this.player.update(this.tiles.grid);
+        
+        switch (this.event_queue.shift()) {
+            case "up":
+                if (this.player.currentTile == '^' || this.player.currentTile == 'b') {
+                    this.player.y = this.player.y - 1;
+                    this.moves = this.moves + 1;
+                } else if (this.player.currentTile == 'j') {
+                    this.player.y = this.player.y - 2;
+                    this.moves = this.moves + 1;
+                }
+
+                break;
             
-            if (this.player.currentTile == '$') {
-                this.playing = false;
-                this.bridge.emit("finished")
-            } else if (this.player.currentTile == 'f') {
-                this.bridge.emit("player_fell")
-            }
+            case "down":
+                if (this.player.currentTile == '^' || this.player.currentTile == 'b') {
+                    this.player.y = this.player.y + 1;
+                    this.moves = this.moves + 1;
+                } else if (this.player.currentTile == 'j') {
+                    this.player.y = this.player.y + 2;
+                    this.moves = this.moves + 1;
+                }
 
-            switch (this.event_queue.shift()) {
-                case "up":
-                    if (this.player.currentTile == '^' || this.player.currentTile == 'b') {
-                        this.player.y = this.player.y - 1;
-                        this.player.moves = this.player.moves + 1;
-                    } else if (this.player.currentTile == 'j') {
-                        this.player.y = this.player.y - 2;
-                        this.player.moves = this.player.moves + 1;
-                    }
+                break;
 
-                    break;
+            case "left":
+                if (this.player.currentTile == '>' || this.player.currentTile == 'b') {
+                    this.player.x = this.player.x - 1;
+                    this.moves = this.moves + 1;
+                } else if (this.player.currentTile == 'j') {
+                    this.player.x = this.player.x - 2;
+                    this.moves = this.moves + 1;
+                }
+
+                break;
+
+            case "right":
+                if (this.player.currentTile == '>' || this.player.currentTile == 'b') {
+                    this.player.x = this.player.x + 1;
+                    this.moves = this.moves + 1;
+                } else if (this.player.currentTile == 'j') {
+                    this.player.x = this.player.x + 2;
+                    this.moves = this.moves + 1;
+                }
+
+                break;
+
+            case "reset":
+                this.player.reset();
+                this.moves = 0;
                 
-                case "down":
-                    if (this.player.currentTile == '^' || this.player.currentTile == 'b') {
-                        this.player.y = this.player.y + 1;
-                        this.player.moves = this.player.moves + 1;
-                    } else if (this.player.currentTile == 'j') {
-                        this.player.y = this.player.y + 2;
-                        this.player.moves = this.player.moves + 1;
-                    }
+                this.bridge.emit("did_reset")
 
-                    break;
+                break;
 
-                case "left":
-                    if (this.player.currentTile == '>' || this.player.currentTile == 'b') {
-                        this.player.x = this.player.x - 1;
-                        this.player.moves = this.player.moves + 1;
-                    } else if (this.player.currentTile == 'j') {
-                        this.player.x = this.player.x - 2;
-                        this.player.moves = this.player.moves + 1;
-                    }
+            case undefined:
+                break;
+            
+            default:
+                console.error(this.event_queue.at(-1));
 
-                    break;
-
-                case "right":
-                    if (this.player.currentTile == '>' || this.player.currentTile == 'b') {
-                        this.player.x = this.player.x + 1;
-                        this.player.moves = this.player.moves + 1;
-                    } else if (this.player.currentTile == 'j') {
-                        this.player.x = this.player.x + 2;
-                        this.player.moves = this.player.moves + 1;
-                    }
-
-                    break;
-
-                case "reset":
-                    this.player.reset();
-                    this.moves = 0;
-
-                    break;
-
-                case undefined:
-                    break;
-                
-                default:
-                    console.error(this.event_queue.at(-1));
-
-                    break;
-            }
+                break;
+        }
+        
+        this.player.update(this.tiles.grid);
+        
+        if (this.player.currentTile == '$') {
+            this.playing = false;
+            this.bridge.emit("finished");
+        } else if (this.player.currentTile == 'f') {
+            this.bridge.emit("player_fell");
+            this.playing = false;
         }
     }
 };
@@ -259,7 +267,7 @@ function setup() {
     
     game = new Game();
     window.bridge = game.bridge;
-    // game.bridge.receive("load_level", '{"data":{"id":1},"level":["............","............","...j.bj.>^$.","...^>j.b.>^.",">j.>^.......","b.j.>^.j.>b.","..^..j......","bjb>^..jb.j.","..jb.j....^.","j...j.>>b.^.","^...^>^.j.^.","b>j.>^j.b..."]}');
+    game.bridge.receive("load_level", '{"data":{"id":1},"level":["............","............","...j.bj.>^$.","...^>j.b.>^.",">j.>^.......","b.j.>^.j.>b.","..^..j......","bjb>^..jb.j.","..jb.j....^.","j...j.>>b.^.","^...^>^.j.^.","b>j.>^j.b..."]}');
 }
 
 function draw() {

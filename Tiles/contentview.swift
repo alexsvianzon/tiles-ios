@@ -25,9 +25,9 @@ struct ContentView: View {
                 Spacer()
                 
                 Button() {
-                    print("going home")
+                    
                 } label: {
-                    Text("Return home")
+                    Text("Back to Levels")
                         .foregroundStyle(.white)
                         .frame(maxWidth: .infinity)
                         .padding()
@@ -37,20 +37,9 @@ struct ContentView: View {
                 
                 HStack {
                     Button() {
-                        print("stats")
+                        
                     } label: {
                         Text("Stats")
-                            .foregroundStyle(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                    }
-                    .buttonStyle(.bordered)
-                    .tint(.blue)
-                    
-                    Button() {
-                        print("share")
-                    } label: {
-                        Text("Share")
                             .foregroundStyle(.white)
                             .frame(maxWidth: .infinity)
                             .padding()

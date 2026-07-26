@@ -10,10 +10,16 @@ import WebKit
 
 struct SwiftUIWKWebView: UIViewRepresentable {
     let url: URL
-    let gameController: GameController
+    var bridge: JSBridge
+    
+    init(bridge: JSBridge) {
+        url = Bundle.main.url(forResource: "index", withExtension: "html")!
+        
+        self.bridge = bridge
+    }
     
     func makeCoordinator() -> Coordinator {
-        Coordinator(self)
+        Coordinator(self, bridge: bridge)
     }
     
     func makeUIView(context: Context) -> WKWebView {
@@ -26,6 +32,8 @@ struct SwiftUIWKWebView: UIViewRepresentable {
         
         let webView = WKWebView(frame: .zero, configuration: config)
         webView.load(URLRequest(url: url))
+        bridge.attach(webView)
+        
         return webView
     }
     
@@ -35,20 +43,17 @@ struct SwiftUIWKWebView: UIViewRepresentable {
     
     class Coordinator: NSObject, WKScriptMessageHandler {
         var parent: SwiftUIWKWebView
+        var bridge: JSBridge
 
-        init(_ parent: SwiftUIWKWebView) {
+        init(_ parent: SwiftUIWKWebView, bridge: JSBridge) {
             self.parent = parent
+            self.bridge = bridge
         }
 
         func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
             guard message.name == "game" else { return }
             
-            
+            bridge.receive(message.body as! String)
         }
     }
-}
-
-#Preview {
-    let htmlURL = Bundle.main.url(forResource: "index", withExtension: "html")!
-    SwiftUIWKWebView(url: htmlURL, gameController: GameController(gameState: GameState()))
 }

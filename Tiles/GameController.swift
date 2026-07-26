@@ -8,87 +8,71 @@
 import SwiftUI
 import WebKit
 
+enum GameInput {
+    case reset
+    case up
+    case down
+    case left
+    case right
+}
+
 struct Level {
     var Id: UInt = 0
     var tileData: Array<String> = []
 }
 
-struct GameState {
+@Observable
+class GameState {
+    var levelCompleted: Bool = false
     var isFalling: Bool = false
-    var isBeaten: Bool = false
-    var moveCount: UInt = 0
-    var currentLevel: Level = Level()
-}
-
-enum GameInput {
-    case RESET
-    case UP
-    case DOWN
-    case LEFT
-    case RIGHT
-}
-
-enum GameOutput {
-    case FINISHED
-    case ERROR
 }
 
 class GameController {
-    var page = WebPage()
-    var gameState: GameState
+    var currentLevel: Level = Level()
+    var bridge: JSBridge = JSBridge()
+    var state: GameState
     
-    init(gameState: GameState) {
-        let htmlURL = Bundle.main.url(forResource: "index", withExtension: "html")!
-        let baseURL = htmlURL.deletingLastPathComponent()
-        
-        var htmlString: String?
-        do {
-            htmlString = try String.init(contentsOf: htmlURL, encoding: .utf8)
-        } catch {
-            print("Could not find get string from HTML, error: \(error)")
-        }
-        
-        page.load(html: htmlString!, baseURL: baseURL)
-        
-        page.isInspectable = true
-        self.gameState = gameState
+    init(_ state: GameState) {
+        self.state = state
     }
     
-    @MainActor
-    public func emit(event: GameInput) async {
-        do {
-            var event_string: String
+    func attachBridgeReceiver() {
+        bridge.onEventReceived = { [weak self] event in
+            guard let self = self else { return }
             
-            switch event {
-            case .UP:
-                event_string = "up"
-                gameState.moveCount += 1
-                
-            case .DOWN:
-                event_string = "down"
-                gameState.moveCount += 1
-                
-            case .LEFT:
-                event_string = "left"
-                gameState.moveCount += 1
-                
-            case .RIGHT:
-                event_string = "right"
-                gameState.moveCount += 1
-                
-            case .RESET:
-                event_string = "reset"
-                gameState.moveCount = 0
+            switch event as String {
+            case "finished":
+                self.state.levelCompleted = true
+            case "player_fell":
+                self.state.isFalling = true
+            case "did_reset":
+                self.state.isFalling = false
+            default:
+                print(event)
+                break
             }
-            
-            try await page.callJavaScript(
-                """
-                game.bridge.receive(event);
-                """,
-                arguments: ["event": event_string]
-            )
-        } catch {
-            print("\(error)")
         }
+    }
+    
+    func emit(_ input: GameInput) {
+        var event: String = ""
+        switch input {
+        case .up:
+            event = "up"
+        case .down:
+            event = "down"
+        case .left:
+            event = "left"
+        case .right:
+            event = "right"
+        case .reset:
+            event = "reset"
+        }
+        
+        let function = """
+        game.bridge.receive("\(event)")
+        """
+        
+        bridge.emit(function)
     }
 }

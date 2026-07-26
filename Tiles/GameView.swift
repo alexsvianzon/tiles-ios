@@ -30,74 +30,97 @@ extension View {
 
 
 struct GameView: View {
-    @State private var gameState: GameState
-    private var game: GameController
-    
-    init() {
-        let initGameState = GameState()
-        gameState = initGameState
-        game = GameController(gameState: initGameState)
-    }
+    @Environment(\.dismiss) var dismiss
+    let controller: GameController
+    @State var state: GameState
     
     var body: some View {
-        Text("Demo Level")
-            .font(Font.custom("NewYorkExtraLarge-Bold", size: 42))
-        
-        WebView(game.page)
+        SwiftUIWKWebView(bridge: controller.bridge)
             .aspectRatio(1.0, contentMode: .fit)
+            .onAppear {
+                controller.attachBridgeReceiver()
+            }
         
         VStack {
             Button() {
-                Task {
-                    await game.emit(event: .UP)
-                }
+                controller.emit(.up)
             } label: {
-                Image(systemName: "arrowshape.up.fill")
+                Image(systemName: "chevron.up")
                     .playerButtonModifier()
             }
+            .disabled(state.isFalling)
         
             HStack {
                 Button() {
-                    Task {
-                        await game.emit(event: .LEFT)
-                    }
+                    controller.emit(.left)
                 } label: {
-                    Image(systemName: "arrowshape.left.fill")
+                    Image(systemName: "chevron.left")
                         .playerButtonModifier()
                 }
                 
                 Button() {
-                    Task {
-                        await game.emit(event: .RESET)
-                    }
+                    controller.emit(.reset)
                 } label: {
                     Image(systemName: "arrow.clockwise")
                         .playerButtonModifier()
                 }
                 
                 Button() {
-                    Task {
-                        await game.emit(event: .RIGHT)
-                    }
+                    controller.emit(.right)
                 } label: {
-                    Image(systemName: "arrowshape.right.fill")
+                    Image(systemName: "chevron.right")
                         .playerButtonModifier()
                 }
             }
             
             Button() {
-                Task {
-                    await game.emit(event: .DOWN)
-                }
+                controller.emit(.down)
             } label: {
-                Image(systemName: "arrowshape.down.fill")
+                Image(systemName: "chevron.down")
                     .playerButtonModifier()
             }
         }
         .padding()
+        .sheet(isPresented: $state.levelCompleted) {
+            VStack {
+                Text("Level Beaten!")
+                    .font(Font.custom("NewYorkExtraLarge-Bold", size: 32))
+                    .padding()
+                
+                Spacer()
+                
+                Button() {
+                    
+                } label: {
+                    Text("Back to Levels")
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(.blue)
+                
+                HStack {
+                    Button() {
+                        
+                    } label: {
+                        Text("Stats")
+                            .foregroundStyle(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                    }
+                    .buttonStyle(.bordered)
+                    .tint(.blue)
+                }
+            }
+            .padding()
+            .presentationDetents([.medium])
+        }
     }
 }
 
 #Preview {
-    GameView()
+    let state = GameState()
+    let controller = GameController(state)
+    GameView(controller: controller, state: state)
 }
