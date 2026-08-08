@@ -15,6 +15,7 @@ class Bridge {
             handler(data);
         } else {
             console.warn("The message: ", message, "could not be processed.");
+            this.transport.send("no");
         }
     }
 

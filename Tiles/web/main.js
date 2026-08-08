@@ -3,12 +3,13 @@ let CANVAS_SIZE = Math.min(
     window.innerHeight
 );
 
-let GRID_SIZE = 12;
-let TILE_SIZE = CANVAS_SIZE / GRID_SIZE;
+var GRID_SIZE = 12;
+var TILE_SIZE = CANVAS_SIZE / GRID_SIZE;
 
-//test
-
-window.instanceID = Math.random();
+function setGridSize(grid_size) {
+    GRID_SIZE = grid_size;
+    TILE_SIZE = CANVAS_SIZE / GRID_SIZE;
+}
 
 class Tile {
     constructor() {
@@ -66,9 +67,7 @@ class Tile {
         );
         
         this.grid.push(this.finish);
-
         this.grid.layer = 1;
-
         this.finish.visible = true;
     }
 }
@@ -129,8 +128,8 @@ class Player {
 
 class Game {
     constructor() {
-        this.tiles = new Tile();
-        this.player = new Player();
+        this.tiles = undefined;
+        this.player = undefined;
         this.moves = 0;
 
         this.level = new Level();
@@ -143,10 +142,11 @@ class Game {
             let level = JSON.parse(level_json.trim());
             this.level.tiles = level.level;
 
-            console.log(level);
-
+            setGridSize(level.level.length);
+            this.tiles = new Tile();
             this.tiles.loadLevel(this.level.tiles);
 
+            this.player = new Player();
             this.player.reset();
             this.player.update(this.tiles.grid);
 
@@ -261,13 +261,17 @@ let game;
 function setup() {
     createCanvas(CANVAS_SIZE - 1, CANVAS_SIZE - 1);
         
+    // for some reason, WebKit needs this explicit call to begin animation
     requestAnimationFrame(() => {
         return;
     });
     
     game = new Game();
     window.bridge = game.bridge;
-    game.bridge.receive("load_level", '{"data":{"id":1},"level":["............","............","...j.bj.>^$.","...^>j.b.>^.",">j.>^.......","b.j.>^.j.>b.","..^..j......","bjb>^..jb.j.","..jb.j....^.","j...j.>>b.^.","^...^>^.j.^.","b>j.>^j.b..."]}');
+    game.bridge.emit("game_loaded"); // since the app can't load a level while
+                                     // the web core is still loading, use this
+                                     // emit call to notify that the core is
+                                     // ready
 }
 
 function draw() {
@@ -275,5 +279,4 @@ function draw() {
     background('#4361ee');
 
     game.update();
-    console.log(window.instanceID);
 }

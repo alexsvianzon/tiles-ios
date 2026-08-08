@@ -7,8 +7,9 @@
 
 import SwiftUI
 import WebKit
+internal import Combine
 
-struct PlayerButtonModifier: ViewModifier {
+struct ActionButton: ViewModifier {
     func body(content: Content) -> some View {
         content
             .font(.title2)
@@ -23,8 +24,8 @@ struct PlayerButtonModifier: ViewModifier {
 }
 
 extension View {
-    func playerButtonModifier() -> some View {
-        modifier(PlayerButtonModifier())
+    func actionButton() -> some View {
+        modifier(ActionButton())
     }
 }
 
@@ -34,93 +35,111 @@ struct GameView: View {
     let controller: GameController
     @State var state: GameState
     
+    let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+    
     var body: some View {
-        SwiftUIWKWebView(bridge: controller.bridge)
-            .aspectRatio(1.0, contentMode: .fit)
-            .onAppear {
-                controller.attachBridgeReceiver()
-            }
-        
-        VStack {
-            Button() {
-                controller.emit(.up)
-            } label: {
-                Image(systemName: "chevron.up")
-                    .playerButtonModifier()
-            }
-            .disabled(state.isFalling)
-        
-            HStack {
-                Button() {
-                    controller.emit(.left)
-                } label: {
-                    Image(systemName: "chevron.left")
-                        .playerButtonModifier()
-                }
-                
-                Button() {
-                    controller.emit(.reset)
-                } label: {
-                    Image(systemName: "arrow.clockwise")
-                        .playerButtonModifier()
-                }
-                
-                Button() {
-                    controller.emit(.right)
-                } label: {
-                    Image(systemName: "chevron.right")
-                        .playerButtonModifier()
-                }
-            }
-            
-            Button() {
-                controller.emit(.down)
-            } label: {
-                Image(systemName: "chevron.down")
-                    .playerButtonModifier()
-            }
-        }
-        .padding()
-        .sheet(isPresented: $state.levelCompleted) {
+        NavigationStack {
             VStack {
-                Text("Level Beaten!")
-                    .font(Font.custom("NewYorkExtraLarge-Bold", size: 32))
-                    .padding()
+                SwiftUIWKWebView(bridge: controller.bridge)
+                    .aspectRatio(1.0, contentMode: .fit)
+                    .onAppear {
+                        controller.initialize()
+                        state.time = 0
+                    }
                 
-                Spacer()
-                
-                Button() {
+                VStack {
+                    Button() {
+                        controller.emit(.up)
+                    } label: {
+                        Image(systemName: "chevron.up")
+                            .actionButton()
+                    }
+                    .disabled(state.isFalling)
                     
-                } label: {
-                    Text("Back to Levels")
-                        .foregroundStyle(.white)
-                        .frame(maxWidth: .infinity)
+                    HStack {
+                        Button() {
+                            controller.emit(.left)
+                        } label: {
+                            Image(systemName: "chevron.left")
+                                .actionButton()
+                        }
+                        
+                        Button() {
+                            controller.emit(.reset)
+                        } label: {
+                            Image(systemName: "arrow.clockwise")
+                                .actionButton()
+                        }
+                        
+                        Button() {
+                            controller.emit(.right)
+                        } label: {
+                            Image(systemName: "chevron.right")
+                                .actionButton()
+                        }
+                    }
+                    
+                    Button() {
+                        controller.emit(.down)
+                    } label: {
+                        Image(systemName: "chevron.down")
+                            .actionButton()
+                    }
+                }
+                .padding()
+                .sheet(isPresented: $state.levelCompleted) {
+                    VStack {
+                        Text("Level Beaten!")
+                            .font(Font.custom("NewYorkExtraLarge-Bold", size: 32))
+                            .padding()
+                        
+                        Spacer()
+                        
+                        Button() {
+                            state.levelCompleted = false
+                            dismiss()
+                        } label: {
+                            Text("Back to Levels")
+                                .foregroundStyle(.white)
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .tint(.blue)
+                        
+                        HStack {
+                            Button() {
+                                
+                            } label: {
+                                Text("Stats")
+                                    .foregroundStyle(.white)
+                                    .frame(maxWidth: .infinity)
+                                    .padding()
+                            }
+                            .buttonStyle(.bordered)
+                            .tint(.blue)
+                        }
+                    }
+                    .padding()
+                    .presentationDetents([.medium])
+                }
+            }
+            .onReceive(timer) { _ in
+                state.time += 1
+            }
+            .toolbar {
+                ToolbarItem {
+                    Text(formatTime(state.time))
+                        .font(.system(.title, design: .monospaced))
                         .padding()
                 }
-                .buttonStyle(.borderedProminent)
-                .tint(.blue)
-                
-                HStack {
-                    Button() {
-                        
-                    } label: {
-                        Text("Stats")
-                            .foregroundStyle(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                    }
-                    .buttonStyle(.bordered)
-                    .tint(.blue)
-                }
             }
-            .padding()
-            .presentationDetents([.medium])
         }
     }
 }
 
 #Preview {
     let state = GameState()
-    let controller = GameController(state)
+    let controller = GameController(state, level: Level(), storage: Storage())
     GameView(controller: controller, state: state)
 }
