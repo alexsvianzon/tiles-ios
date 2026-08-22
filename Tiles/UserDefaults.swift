@@ -35,12 +35,12 @@ extension Key: ExpressibleByStringLiteral {
     }
 }
 
-//  enum-like declaration - i like this!
-//  don't forget to add all the keys to the storage
+// enum-like declaration - i like this!
+// don't forget to add all the keys to the storage
 
 extension Key {
-    static let isOnboardingCompleted: Key = "onboarding"
     static let levelSaveData: Key = "levels"
+    static let settings: Key = "settings"
 }
 
 @propertyWrapper
@@ -54,9 +54,9 @@ struct UserDefault<T: PropertyListValue> {
 }
 
 struct Storage {
-    @UserDefault(key: .isOnboardingCompleted)
-    var isOnboardingCompleted: Bool?
-    
     @UserDefault(key: .levelSaveData)
     var levelSaveData: [String : [String : Int]]?
+    
+    @UserDefault(key: .settings)
+    var settings: [String : Int]?
 }

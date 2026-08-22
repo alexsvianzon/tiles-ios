@@ -28,15 +28,24 @@ class JSBridge {
         )
     }
     
-    var onEventReceived: ((String) -> Void)?
+    var onEventReceived: ((String, [String : Int]) -> Void)?
     
-    func receive(_ event: String) {
+    func receive(_ payload: String) {
         do {
-            let jsonData = event.data(using: .utf8)!
+            let jsonData = payload.data(using: .utf8)!
             if let json = try JSONSerialization.jsonObject(with: jsonData, options: []) as? [String: Any] {
+                var event: String = ""
+                var data: [String : Int] = [:]
+                
                 if let event_key = json["event"] as? String {
-                    onEventReceived?(event_key)
+                    event = event_key
                 }
+                
+                if let data_key = json["data"] as? [String : Int] {
+                    data = data_key
+                }
+                
+                onEventReceived?(event, data)
             }
         } catch {
             print("Error prasing JSON: \(error.localizedDescription)")

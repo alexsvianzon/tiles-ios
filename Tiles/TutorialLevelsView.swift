@@ -8,34 +8,36 @@
 import SwiftUI
 
 struct TutorialLevelsView: View {
-    let repo: LevelRepositoryManager = LevelRepositoryManager()
-    var state: GameState = GameState()
-    @State var storage: Storage
+    let repo = LevelRepositoryManager()
+    @Binding var storage: Storage
+    @State private var levelSaveData: [String: [String: Int]] = [:]
     
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                ForEach(repo.get_local("tutorial")) { level in
-                    NavigationLink(destination: GameView(
+        ScrollView {
+            ForEach(repo.get_local("tutorial")) { level in
+                NavigationLink {
+                    let state = GameState()
+                    GameView(
                         controller: GameController(
                             state,
                             level: level,
-                            storage: storage
+                            storage: $storage
                         ),
                         state: state
-                    )) {
-                        LevelPreviewView(
-                            level: level,
-                            storage: storage
-                        )
-                    }
-                    .buttonStyle(.plain)
+                    )
+                } label: {
+                    LevelPreviewView(level: level, levelSaveData: levelSaveData)
                 }
+                .buttonStyle(.plain)
             }
+        }
+        .onAppear {
+            levelSaveData = storage.levelSaveData ?? [:]
         }
     }
 }
 
 #Preview {
-    TutorialLevelsView(storage: Storage())
+    @Previewable @State var storage = Storage()
+    TutorialLevelsView(storage: $storage)
 }

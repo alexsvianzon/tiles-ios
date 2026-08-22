@@ -1,29 +1,23 @@
 [
     {
-        "id": 1,
+        "id": "T1",
         "difficulty": "tutorial",
         "name": "Learning Blue: Go Anywhere",
-        "hint": "Got stuck? Try clicking the reset button in the middle of the arrow buttons.",
+        "hint": "Blue tiles allow you to move in any direction.",
         "level":
         [
-            "............",
-            "............",
-            "............",
-            "............",
-            ".bbbbbbbbb..",
-            ".b.......b..",
-            ".bbbbb...b..",
-            ".....b...bb.",
-            ".bbbbb....b.",
-            "bb.......bb.",
-            "b.....$bbb..",
-            "b..........."
+            "bbbbb",
+            "b...b",
+            "b.$.b",
+            "b.b.b",
+            "b.bbb"
         ]
     },
     {
-        "id": 2,
+        "id": "T2",
         "difficulty": "tutorial",
         "name": "Learning Red: Up and Down",
+        "hint": "Red tiles allow you to move vertically.",
         "level":
         [
             "$........^..",
@@ -41,9 +35,10 @@
         ]
     },
     {
-        "id": 3,
+        "id": "T3",
         "difficulty": "tutorial",
         "name": "Learning Green: Left and Right",
+        "hint": "Green tiles allow you to move horizontally.",
         "level":
         [
             "............",
@@ -61,32 +56,21 @@
         ]
     },
     {
-        "id": 4,
+        "id": "T4",
         "difficulty": "tutorial",
         "name": "Learning Orange: Hopping Around",
+        "hint": "Blue tiles allow you to move in any direction, two spaces at a time.",
         "level":
         [
-            "...........",
-            "...........",
-            "...........",
-            "...........",
-            "..j.j.j.j..",
-            "...........",
-            "..j.....j.j",
-            "...........",
-            "j.j...$...j",
-            "...........",
-            "j.....j.j.j",
+            "j.j.j.j.j",
+            ".........",
+            "j.......j",
+            ".........",
+            "j...$...j",
+            ".........",
+            "j...j...j",
+            ".........",
+            "j...j.j.j",
         ]
-    },
-    {
-        "id": 5,
-        "difficulty": "tutorial",
-        "name": "Done",
-        "level":
-        [
-            ">$",
-            "^j",
-        ]
-    },
+    }
 ]

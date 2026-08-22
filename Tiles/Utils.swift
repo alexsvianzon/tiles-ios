@@ -7,8 +7,6 @@
 
 import Foundation
 
-// time formatting
-
 func formatTime(_ time: Int) -> String {
     let minutes = time / 60
     let seconds = time % 60

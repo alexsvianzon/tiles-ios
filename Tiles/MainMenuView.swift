@@ -6,68 +6,96 @@
 //
 
 import SwiftUI
+import TipKit
 
-struct MainMenuItemView<Destination: View>: View {
-    let destination: Destination
+struct MainMenuItemView: View {
     let header: String
     let footer: String
     
-    init(_ destination: Destination, header: String, footer: String) {
-        self.destination = destination
+    init(header: String, footer: String) {
         self.header = header
         self.footer = footer
     }
     
     var body: some View {
-        NavigationLink(destination: destination) {
-            VStack() {
-                VStack(alignment: .leading, spacing: 24) {
-                    HStack {
-                        Text(header)
-                            .bold()
-                        
-                        Spacer()
-                        
-                        Image(systemName: "play.fill")
-                    }
-                    
-                    Text(footer)
+        VStack {
+            VStack(alignment: .leading, spacing: 24) {
+                HStack {
+                    Text(header)
+                        .bold()
+                    Spacer()
+                    Image(systemName: "play.fill")
                 }
-                .padding()
-                .background(Color(.secondarySystemBackground))
-                .cornerRadius(16)
+                
+                Text(footer)
             }
             .padding()
-            .frame(maxWidth: .infinity)
+            .background(Color(.secondarySystemBackground))
+            .cornerRadius(16)
         }
-        .buttonStyle(.plain)
+        .padding()
+        .frame(maxWidth: .infinity)
+    }
+}
+
+struct OnboardingTip: Tip {
+    var title: Text {
+        Text("Start Here!")
+    }
+
+
+    var message: Text? {
+        Text("Start learning Tiles here!")
+    }
+
+
+    var image: Image? {
+        Image(systemName: "book.pages")
     }
 }
 
 struct MainMenuView: View {
-    @State var storage: Storage = Storage()
+    @State private var storage: Storage = Storage()
     
     var body: some View {
         NavigationStack {
             ScrollView {
-                MainMenuItemView(
-                    TutorialLevelsView(storage: storage),
-                    header: "Learn the Game",
-                    footer: "Tutorial Levels")
-                
-                MainMenuItemView(
-                    CoreLevelsView(storage: storage),
-                    header: "Play the Game",
-                    footer: "Core Levels")
-                
-                Button() {
-                    storage.levelSaveData = [:]
+                NavigationLink {
+                    TutorialLevelsView(storage: $storage)
                 } label: {
-                    Text("Clear Data")
+                    MainMenuItemView(header: "Learn the Game", footer: "Tutorial Levels")
                 }
+                .buttonStyle(.plain)
+                .popoverTip(OnboardingTip())
+                
+                NavigationLink {
+                    CoreLevelsView(storage: $storage)
+                } label: {
+                    MainMenuItemView(header: "Play the Game", footer: "Core Levels")
+                }
+                .buttonStyle(.plain)
+                
+                NavigationLink {
+                    SettingsView(storage: $storage)
+                } label: {
+                    MainMenuItemView(header: "Customize the Game", footer: "Settings")
+                }
+                .buttonStyle(.plain)
             }
             .background(Color(.tertiarySystemBackground))
             .navigationTitle("Tiles")
+        }
+        .task {
+            do {
+#if DEBUG
+                try Tips.resetDatastore()
+#endif
+                
+                try Tips.configure()
+            }
+            catch {
+                print("Error initializing TipKit \(error.localizedDescription)")
+            }
         }
     }
 }

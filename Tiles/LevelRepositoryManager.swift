@@ -8,7 +8,7 @@
 import Foundation
 import SwiftUI
 
-enum LevelDifficulty {
+enum LevelDifficulty: Hashable {
     case tutorial
     case easy
     case medium
@@ -31,27 +31,28 @@ enum LevelDifficulty {
     }
 }
 
-struct Level: Identifiable {
-    let id: UUID = UUID()
+struct Level: Identifiable, Hashable {
+    var id: String { level_id }
     
-    var level_id: UInt = 0
+    var level_id: String = "0"
     var difficulty: LevelDifficulty = .tutorial
     var name: String = ""
-    var tileData: Array<String> = []
+    var hint: String?
+    var tileData: [String] = []
 }
 
 class LevelRepositoryManager {
-    func get_local(_ from: String) -> Array<Level> {
-        var levels: Array<Level> = []
+    func get_local(_ from: String) -> [Level] {
+        var levels: [Level] = []
         
         let url = Bundle.main.url(forResource: from, withExtension: "json")!
         do {
             let jsonData = try Data(contentsOf: url)
-            if let json = try JSONSerialization.jsonObject(with: jsonData, options: []) as? Array<[String: Any]> {
+            if let json = try JSONSerialization.jsonObject(with: jsonData, options: []) as? [[String: Any]] {
                 for item in json {
                     var level = Level()
                     
-                    if let id = item["id"] as? UInt {
+                    if let id = item["id"] as? String {
                         level.level_id = id
                     }
                     
@@ -74,10 +75,14 @@ class LevelRepositoryManager {
                         level.name = name
                     }
                     
-                    if let tileMap = item["level"] as? Array<String> {
+                    if let tileMap = item["level"] as? [String] {
                         level.tileData = tileMap
                     } else {
                         print("oh noes")
+                    }
+                    
+                    if let hint = item["hint"] as? String {
+                        level.hint = hint
                     }
                     
                     levels.append(level)

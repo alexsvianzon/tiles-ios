@@ -1,0 +1,70 @@
+{
+  "fill" : {
+    "linear-gradient" : [
+      "display-p3:0.26275,0.38039,0.93333,1.00000",
+      "extended-srgb:0.00000,0.53333,1.00000,1.00000"
+    ],
+    "orientation" : {
+      "start" : {
+        "x" : 0.5,
+        "y" : 0
+      },
+      "stop" : {
+        "x" : 0.5,
+        "y" : 0.7
+      }
+    }
+  },
+  "groups" : [
+    {
+      "layers" : [
+        {
+          "glass" : true,
+          "image-name" : "Player.png",
+          "name" : "Player"
+        }
+      ],
+      "lighting" : "individual",
+      "name" : "Player",
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 0.5
+      },
+      "translucency" : {
+        "enabled" : true,
+        "value" : 0.5
+      }
+    },
+    {
+      "blur-material" : null,
+      "hidden" : false,
+      "layers" : [
+        {
+          "image-name" : "Tile-BL.png",
+          "name" : "Tile-BL"
+        },
+        {
+          "image-name" : "Tile-TR.png",
+          "name" : "Tile-TR"
+        }
+      ],
+      "lighting" : "individual",
+      "name" : "Tiles",
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 0.5
+      },
+      "specular" : true,
+      "translucency" : {
+        "enabled" : false,
+        "value" : 0
+      }
+    }
+  ],
+  "supported-platforms" : {
+    "circles" : [
+      "watchOS"
+    ],
+    "squares" : "shared"
+  }
+}

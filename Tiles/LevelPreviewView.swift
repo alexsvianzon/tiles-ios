@@ -9,7 +9,7 @@ import SwiftUI
 
 struct LevelPreviewView: View {
     let level: Level
-    @State var storage: Storage
+    let levelSaveData: [String: [String: Int]]
     
     var body: some View {
         VStack() {
@@ -22,19 +22,22 @@ struct LevelPreviewView: View {
                     Image(systemName: "play.fill")
                 }
                 
-                if storage.levelSaveData?["\(level.level_id)"]?["completed"] == 1 {
+                if levelSaveData[level.level_id]?["completed"] == 1 {
                     LazyVStack {
                         Text("Completed")
-                            .bold()
-                            .foregroundStyle(.green)
                         
-                        let totalSeconds = storage.levelSaveData?["\(level.level_id)"]?["time"] as? Int ?? 0
-                        let formattedTime = formatTime(totalSeconds)
-                        
-                        Text(formattedTime)
-                            .bold()
-                            .foregroundStyle(.green)
+                        HStack {
+                            let totalSeconds = levelSaveData["\(level.level_id)"]?["time"] ?? 0
+                            let formattedTime = formatTime(totalSeconds)
+                            
+                            Text(formattedTime)
+                            
+                            Text("\(levelSaveData[level.level_id]?["moves"] ?? 0) Moves")
+                            Text("\(levelSaveData[level.level_id]?["resets"] ?? 0) Resets")
+                        }
                     }
+                    .bold()
+                    .foregroundStyle(.green)
                 }
                 
                 HStack {
@@ -44,8 +47,11 @@ struct LevelPreviewView: View {
                     
                     Spacer()
                     
-                    Text("\(level.tileData.count)x\(level.tileData.count)")
+                    Text("\(levelSaveData[level.level_id]?["attempts"] ?? 0) Attempts")
+                    
+                    Text("\(level.tileData.count)x\(level.tileData.count) Grid")
                 }
+                .foregroundStyle(.gray)
             }
             .padding()
             .background(Color(.secondarySystemBackground))
@@ -57,5 +63,5 @@ struct LevelPreviewView: View {
 }
 
 #Preview {
-    LevelPreviewView(level: Level(), storage: Storage())
+    LevelPreviewView(level: Level(), levelSaveData: [:])
 }

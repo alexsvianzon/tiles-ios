@@ -247,8 +247,12 @@ class Game {
         this.player.update(this.tiles.grid);
         
         if (this.player.currentTile == '$') {
+            let data = {
+                moves: this.moves
+            }
+
+            this.bridge.emit("finished", data);
             this.playing = false;
-            this.bridge.emit("finished");
         } else if (this.player.currentTile == 'f') {
             this.bridge.emit("player_fell");
             this.playing = false;
@@ -261,7 +265,7 @@ let game;
 function setup() {
     createCanvas(CANVAS_SIZE - 1, CANVAS_SIZE - 1);
         
-    // for some reason, WebKit needs this explicit call to begin animation
+    // explicit call to requestAnimationFrame() to jumpstart p5.js
     requestAnimationFrame(() => {
         return;
     });
